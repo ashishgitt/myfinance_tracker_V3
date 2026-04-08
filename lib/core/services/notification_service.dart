@@ -10,6 +10,7 @@ class NotificationService {
 
   static const _dailyReminderId = 1;
   static const _budgetAlertId = 2;
+  static const _exportReminderId = 3;
 
   static const AndroidNotificationDetails _androidDetails =
       AndroidNotificationDetails(
@@ -24,7 +25,7 @@ class NotificationService {
   static const NotificationDetails _details =
       NotificationDetails(android: _androidDetails);
 
-  // ─── Init (called from main.dart) ────────────────────────────
+  // ─── Init ────────────────────────────
   static Future<void> init() async {
     try {
       const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -37,6 +38,7 @@ class NotificationService {
         description: 'Budget alerts and daily reminders',
         importance: Importance.high,
       );
+
       await _plugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()
@@ -46,40 +48,35 @@ class NotificationService {
     }
   }
 
-  // ─── Daily Reminder ───────────────────────────────────────────
-static Future<void> scheduleDailyReminder(
-    int hour, int minute) async {
-  try {
-    await _plugin.cancel(_dailyReminderId);
-    final scheduledDate = _nextInstanceOfTime(hour, minute);
+  // ─── Daily Reminder ───────────────────────────
+  static Future<void> scheduleDailyReminder(
+      int hour, int minute) async {
+    try {
+      await _plugin.cancel(_dailyReminderId);
+      final scheduledDate = _nextInstanceOfTime(hour, minute);
 
-    await _plugin.zonedSchedule(
-      _dailyReminderId,
-      'MyFinance Tracker 💰',
-      "Don't forget to log your transactions today!",
-      scheduledDate,
-      _details,
-
-      androidScheduleMode:
-          AndroidScheduleMode.inexactAllowWhileIdle,
-
-      matchDateTimeComponents: DateTimeComponents.time,
-
-      // ✅ REQUIRED PARAM (THIS FIXES YOUR ERROR)
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
-  } catch (e) {
-    debugPrint('scheduleDailyReminder error: $e');
+      await _plugin.zonedSchedule(
+        _dailyReminderId,
+        'MyFinance Tracker 💰',
+        "Don't forget to log your transactions today!",
+        scheduledDate,
+        _details,
+        androidScheduleMode:
+            AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (e) {
+      debugPrint('scheduleDailyReminder error: $e');
+    }
   }
-}
-
 
   static Future<void> cancelDailyReminder() async {
     await _plugin.cancel(_dailyReminderId);
   }
 
-  // ─── Budget Alert ─────────────────────────────────────────────
+  // ─── Budget Alert ─────────────────────────────
   static Future<void> showBudgetAlert(
       String categoryName, double budget, double spent) async {
     try {
@@ -95,21 +92,7 @@ static Future<void> scheduleDailyReminder(
     }
   }
 
-  // ─── Helper ───────────────────────────────────────────────────
-  static tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
-    }
-    return scheduled;
-  }
-  // closing brace moved to end
-
-  // ─── Scheduled Export Reminder ────────────────────────────────
-  static const _exportReminderId = 3;
-
+  // ─── Export Reminder ─────────────────────────────
   static Future<void> scheduleExportReminder(
       int hour, int minute, String frequency) async {
     try {
@@ -124,27 +107,41 @@ static Future<void> scheduleDailyReminder(
         case 'Weekly':
           repeat = DateTimeComponents.dayOfWeekAndTime;
           break;
-        default: // Monthly
+        default:
           repeat = DateTimeComponents.dayOfMonthAndTime;
       }
 
-await _plugin.zonedSchedule(
-  _exportReminderId,
-  'MyFinance Export Ready 📊',
-  'Tap to generate and share your scheduled report.',
-  scheduledDate,
-  _details,
-  androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-  matchDateTimeComponents: repeat,
-
-  // ✅ REQUIRED FIX
-  uiLocalNotificationDateInterpretation:
-      UILocalNotificationDateInterpretation.absoluteTime,
-)
+      await _plugin.zonedSchedule(
+        _exportReminderId,
+        'MyFinance Export Ready 📊',
+        'Tap to generate and share your scheduled report.',
+        scheduledDate,
+        _details,
+        androidScheduleMode:
+            AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: repeat,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (e) {
+      debugPrint('scheduleExportReminder error: $e');
+    }
   }
 
   static Future<void> cancelExportReminder() async {
     await _plugin.cancel(_exportReminderId);
   }
 
+  // ─── Helper ───────────────────────────
+  static tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+
+    return scheduled;
+  }
 }
