@@ -128,18 +128,19 @@ static Future<void> scheduleDailyReminder(
           repeat = DateTimeComponents.dayOfMonthAndTime;
       }
 
-      await _plugin.zonedSchedule(
-        _exportReminderId,
-        'MyFinance Export Ready 📊',
-        'Tap to generate and share your scheduled report.',
-        scheduledDate,
-        _details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: repeat,
-      );
-    } catch (e) {
-      debugPrint('scheduleExportReminder error: $e');
-    }
+await _plugin.zonedSchedule(
+  _exportReminderId,
+  'MyFinance Export Ready 📊',
+  'Tap to generate and share your scheduled report.',
+  scheduledDate,
+  _details,
+  androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+  matchDateTimeComponents: repeat,
+
+  // ✅ REQUIRED FIX
+  uiLocalNotificationDateInterpretation:
+      UILocalNotificationDateInterpretation.absoluteTime,
+)
   }
 
   static Future<void> cancelExportReminder() async {
