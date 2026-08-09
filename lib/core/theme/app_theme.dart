@@ -21,7 +21,7 @@ class AppTheme {
           brightness: Brightness.light,
         ),
         navigationBarTheme: _navBarTheme(),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16)),
@@ -46,7 +46,7 @@ class AppTheme {
           brightness: Brightness.dark,
         ),
         navigationBarTheme: _navBarTheme(),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16)),
@@ -73,7 +73,7 @@ class AppTheme {
       navigationBarTheme: _navBarTheme().copyWith(
         backgroundColor: Colors.black,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF0A0A0A),
         elevation: 0,
         shape: RoundedRectangleBorder(
